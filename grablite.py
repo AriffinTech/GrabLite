@@ -23,7 +23,6 @@ def calculate_fare(distance_km, base_fare=2.0, per_km=0.8, surge=1.0):
     fare = (base_fare + distance_km * per_km) * surge
     return round(fare, 2)
 
-
 # -------------------------------
 # Function: Process Payment
 # -------------------------------
@@ -46,7 +45,6 @@ def process_payment(method, amount, wallet_balance=50.0):
         return True, wallet_balance, f"Paid {amount:.2f} with card on file."
     else:
         return False, wallet_balance, "❌ Unknown payment method."
-
 
 # -------------------------------
 # Function: Book Ride
@@ -79,39 +77,9 @@ def book_ride(pickup, dropoff, distance_km, service="GrabCar", payment_method="w
     }
     return receipt
 
-
 # -------------------------------
-# MAIN PROGRAM (Interactive)
+# Helper: Get Valid Input
 # -------------------------------
-if __name__ == "__main__":
-    print("=== 🚖 Grab-Lite Ride Booking Simulator ===")
-
-    # Take inputs from user
-    service = input("Choose service (GrabCar / GrabBike): ").strip()
-    pickup = input("Enter pickup location: ").strip()
-    dropoff = input("Enter dropoff location: ").strip()
-
-    try:
-        distance_km = float(input("Enter estimated distance (km): "))
-    except ValueError:
-        print("❌ Invalid distance. Please enter a number.")
-        exit()
-
-    try:
-        surge = float(input("Enter surge multiplier (1.0 = normal): "))
-    except ValueError:
-        surge = 1.0  # default if invalid
-
-    payment_method = input("Choose payment method (wallet / cash / card): ").strip().lower()
-
-    # Book the ride
-    receipt = book_ride(pickup, dropoff, distance_km, service, payment_method, surge)
-
-    # Print receipt
-    print("\n=== 📄 Ride Receipt ===")
-    for key, value in receipt.items():
-        print(f"{key}: {value}")
-
 def get_valid_input(prompt, valid_options=None, cast_func=str, error_msg="Invalid input."):
     """
     Prompt user until valid input is received.
@@ -127,6 +95,9 @@ def get_valid_input(prompt, valid_options=None, cast_func=str, error_msg="Invali
         except Exception:
             print(error_msg)
 
+# -------------------------------
+# MAIN PROGRAM (Interactive)
+# -------------------------------
 if __name__ == "__main__":
     print("=== 🚖 Grab-Lite Ride Booking Simulator ===")
 
@@ -144,10 +115,19 @@ if __name__ == "__main__":
         print("❌ Distance must be greater than 0 km.")
         distance_km = get_valid_input("Enter estimated distance (km): ", None, float, "❌ Please enter a valid number.")
 
-    # Surge input
-    surge = get_valid_input("Enter surge multiplier (1.0 = normal): ", None, float, "❌ Please enter a valid number.")
-    if surge < 1.0:
-        print("⚠️ Surge multiplier cannot be less than 1.0. Setting to 1.0.")
+    # Surge input (improved)
+    surge_active = get_valid_input(
+        "Is surge pricing active? (yes/no): ", ["yes", "no"], str.lower, "❌ Please enter yes or no."
+    )
+    if surge_active == "yes":
+        print("Surge pricing applies during busy hours. Enter 1.0 for normal fare, higher for surge.")
+        surge = get_valid_input(
+            "Enter surge multiplier (e.g., 1.5 for 50% higher fare): ", None, float, "❌ Please enter a valid number."
+        )
+        if surge < 1.0:
+            print("⚠️ Surge multiplier cannot be less than 1.0. Setting to 1.0.")
+            surge = 1.0
+    else:
         surge = 1.0
 
     # Payment method
@@ -160,14 +140,14 @@ if __name__ == "__main__":
 
     # Print formatted receipt
     print("\n=== 📄 Ride Receipt ===")
-    print(f"Timestamp      : {receipt['timestamp']}")
-    print(f"Service        : {receipt['service']}")
-    print(f"Pickup         : {receipt['pickup']}")
-    print(f"Dropoff        : {receipt['dropoff']}")
-    print(f"Distance (km)  : {receipt['distance_km']}")
-    print(f"Surge Multiplier: {receipt['surge_multiplier']}")
-    print(f"Fare           : ${receipt['fare']:.2f}")
-    print(f"Payment Method : {receipt['payment_method'].capitalize()}")
-    print(f"Payment Status : {receipt['payment_status']}")
-    print(f"Details        : {receipt['payment_message']}")
-# ...existing code...
+    print(f"Timestamp        : {receipt['timestamp']}")
+    print(f"Service          : {receipt['service']}")
+    print(f"Pickup           : {receipt['pickup']}")
+    print(f"Dropoff          : {receipt['dropoff']}")
+    print(f"Distance (km)    : {receipt['distance_km']}")
+    if surge > 1.0:
+        print(f"Surge Multiplier : {receipt['surge_multiplier']}")
+    print(f"Fare             : ${receipt['fare']:.2f}")
+    print(f"Payment Method   : {receipt['payment_method'].capitalize()}")
+    print(f"Payment Status   : {receipt['payment_status']}")
+    print(f"Details          : {receipt['payment_message']}")
