@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Grab-Lite Ride Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      display: flex;
+      justify-content: center;
+      padding: 30px;
+    }
+    .container {
+      width: 360px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      border-top: 6px solid #00b14f; /* Grab green bar */
+    }
+    h1 {
+      text-align: center;
+      color: #00b14f; /* Grab green */
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #2d3436;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      background: #00b14f; /* Grab green */
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #02d35f;
+    }
+    .receipt {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f0fff5; /* light green tint */
+      border: 1px solid #00b14f;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    .receipt strong {
+      color: #00b14f;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚖 Grab-Lite</h1>
+    <form id="bookingForm">
+      <label>Service</label>
+      <select id="service">
+        <option>GrabCar</option>
+        <option>GrabBike</option>
+      </select>
+
+      <label>Pickup Location</label>
+      <input type="text" id="pickup" required>
+
+      <label>Dropoff Location</label>
+      <input type="text" id="dropoff" required>
+
+      <label>Distance (km)</label>
+      <input type="number" id="distance" step="0.1" required>
+
+      <label>Surge Multiplier</label>
+      <input type="number" id="surge" step="0.1" value="1.0">
+
+      <label>Payment Method</label>
+      <select id="payment">
+        <option value="wallet">Wallet</option>
+        <option value="cash">Cash</option>
+        <option value="card">Card</option>
+      </select>
+
+      <button type="submit">Book Ride</button>
+    </form>
+
+    <div class="receipt" id="receipt"></div>
+  </div>
+
+  <script>
+    function calculateFare(distance, base=2.0, perKm=0.8, surge=1.0) {
+      return ((base + distance * perKm) * surge).toFixed(2);
+    }
+
+    document.getElementById("bookingForm").addEventListener("submit", function(e){
+      e.preventDefault();
+
+      let service = document.getElementById("service").value;
+      let pickup = document.getElementById("pickup").value;
+      let dropoff = document.getElementById("dropoff").value;
+      let distance = parseFloat(document.getElementById("distance").value);
+      let surge = parseFloat(document.getElementById("surge").value);
+      let payment = document.getElementById("payment").value;
+
+      if (distance <= 0) {
+        alert("❌ Distance must be greater than 0 km.");
+        return;
+      }
+      if (surge < 1.0) surge = 1.0;
+
+      let fare = calculateFare(distance, 2.0, 0.8, surge);
+
+      // Show receipt
+      let receipt = document.getElementById("receipt");
+      receipt.style.display = "block";
+      receipt.innerHTML = `
+        <strong>📄 Ride Receipt</strong><br><br>
+        <b>Service:</b> ${service}<br>
+        <b>From:</b> ${pickup}<br>
+        <b>To:</b> ${dropoff}<br>
+        <b>Distance:</b> ${distance} km<br>
+        <b>Surge:</b> ${surge}x<br>
+        <b>Fare:</b> $${fare}<br>
+        <b>Payment:</b> ${payment}<br>
+        <b>Status:</b> ✅ success
+      `;
+    });
+  </script>
+</body>
+</html>
